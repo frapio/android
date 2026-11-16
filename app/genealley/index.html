@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GeneAlley – Il tuo albero genealogico, sul tuo telefono</title>
+<meta name="description" content="GeneAlley è l'app Android per costruire l'albero genealogico della tua famiglia con foto, date, luoghi e ricorrenze. Funziona offline: i dati restano sul telefono.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2EBDD; --cream:#FBF7EF; --ink:#2F3A2F; --muted:#5E6B5C;
+    --green:#3F5B45; --sage:#9DB39A; --mint:#DCE8D6; --peach:#F1C6A8;
+    --terra:#C2714F; --line:#E2D8C4; --pink:#E7A3B1; --blue:#8FB6D6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Figtree",system-ui,sans-serif;color:var(--ink);line-height:1.6;
+    background:
+      radial-gradient(ellipse 60% 40% at 10% 0%, rgba(157,179,154,.35), transparent 70%),
+      radial-gradient(ellipse 50% 35% at 95% 15%, rgba(241,198,168,.35), transparent 70%),
+      radial-gradient(ellipse 70% 40% at 50% 100%, rgba(157,179,154,.25), transparent 70%),
+      var(--paper);
+    min-height:100vh;
+  }
+  a{color:var(--green)}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+  h1,h2,h3{font-family:"Fraunces",Georgia,serif;font-weight:600;line-height:1.2;color:var(--green)}
+  .brand{font-family:"Great Vibes",cursive;font-weight:400;color:var(--green)}
+
+  /* nav */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+  nav .brand{font-size:2.1rem;text-decoration:none;display:flex;align-items:center;gap:10px}
+  nav ul{list-style:none;display:flex;gap:26px}
+  nav ul a{text-decoration:none;color:var(--muted);font-weight:500}
+  nav ul a:hover{color:var(--terra)}
+
+  /* hero */
+  .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;padding:40px 0 80px}
+  .hero .tag{display:inline-block;background:var(--mint);color:var(--green);font-weight:600;font-size:.85rem;
+    padding:6px 14px;border-radius:999px;margin-bottom:18px}
+  .hero h1{font-size:clamp(2.2rem,4.5vw,3.4rem);margin-bottom:18px}
+  .hero h1 .brand{font-size:1.35em;display:block;margin-bottom:4px}
+  .hero p.lead{font-size:1.15rem;color:var(--muted);max-width:34em;margin-bottom:30px}
+  .cta{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  .btn{display:inline-flex;align-items:center;gap:10px;padding:14px 26px;border-radius:999px;
+    font-weight:600;text-decoration:none;transition:transform .15s, box-shadow .15s}
+  .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(63,91,69,.18)}
+  .btn-primary{background:var(--green);color:var(--cream)}
+  .btn-ghost{background:var(--cream);color:var(--green);border:1px solid var(--line)}
+  .note{font-size:.9rem;color:var(--muted);margin-top:16px}
+
+  /* phone */
+  .phone-stage{position:relative;display:flex;justify-content:center}
+  .phone-stage::before{content:"";position:absolute;inset:8% 4%;border-radius:50%;
+    background:radial-gradient(circle, rgba(241,198,168,.55), rgba(157,179,154,.25) 55%, transparent 72%);filter:blur(10px)}
+  .phone{position:relative;width:300px;height:610px;background:#1f2a22;border-radius:44px;padding:12px;
+    box-shadow:0 30px 60px rgba(47,58,47,.28), inset 0 0 0 2px #3a473d}
+  .screen{width:100%;height:100%;border-radius:34px;overflow:hidden;background:var(--paper);display:flex;flex-direction:column}
+  .screen-top{display:flex;align-items:center;justify-content:space-between;padding:22px 18px 8px}
+  .screen-top .brand{font-size:1.7rem}
+  .screen-top .pill{font-size:.7rem;background:var(--cream);border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--muted)}
+  .screen svg.tree{flex:1;width:100%}
+  .screen-nav{display:flex;justify-content:space-around;align-items:center;background:var(--cream);
+    margin:8px 12px 14px;border-radius:22px;padding:8px 6px;border:1px solid var(--line);font-size:.62rem;color:var(--muted)}
+  .screen-nav span{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .screen-nav .on{background:var(--peach);color:var(--ink);border-radius:999px;padding:3px 10px}
+  .screen-nav .add{width:30px;height:30px;border-radius:50%;background:var(--mint);display:grid;place-items:center;
+    font-size:1.2rem;color:var(--green);font-weight:600}
+
+  /* sections */
+  section{padding:70px 0}
+  .section-head{text-align:center;max-width:640px;margin:0 auto 46px}
+  .section-head h2{font-size:clamp(1.8rem,3vw,2.4rem);margin-bottom:12px}
+  .section-head p{color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .card{background:var(--cream);border:1px solid var(--line);border-radius:22px;padding:28px;
+    transition:transform .2s, box-shadow .2s}
+  .card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(63,91,69,.10)}
+  .card .ico{width:52px;height:52px;border-radius:16px;background:var(--mint);display:grid;place-items:center;margin-bottom:16px}
+  .card h3{font-size:1.2rem;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:.97rem}
+
+  .band{background:var(--green);color:var(--cream);border-radius:32px;padding:56px;display:grid;
+    grid-template-columns:1fr 1fr;gap:40px;align-items:center;position:relative;overflow:hidden}
+  .band h2{color:var(--cream);font-size:2rem;margin-bottom:14px}
+  .band p{opacity:.9}
+  .band ul{list-style:none;display:grid;gap:14px}
+  .band li{background:rgba(251,247,239,.08);border:1px solid rgba(251,247,239,.18);border-radius:16px;padding:14px 18px}
+  .band li strong{color:var(--peach)}
+
+  .langs{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:8px}
+  .langs span{background:var(--cream);border:1px solid var(--line);border-radius:999px;padding:8px 18px;font-weight:500}
+
+  .final{text-align:center}
+  .final .brand{font-size:3.4rem;display:block;margin-bottom:6px}
+  .final p{color:var(--muted);max-width:520px;margin:0 auto 28px}
+
+  footer{border-top:1px solid var(--line);padding:30px 0 40px;font-size:.88rem;color:var(--muted)}
+  footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
+
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr;text-align:center}
+    .hero p.lead{margin-left:auto;margin-right:auto}
+    .cta{justify-content:center}
+    .grid{grid-template-columns:1fr 1fr}
+    .band{grid-template-columns:1fr;padding:36px}
+    nav ul{display:none}
+  }
+  @media (max-width:600px){ .grid{grid-template-columns:1fr} .phone{transform:scale(.9)} }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <nav>
+    <a class="brand" href="#">
+      <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="19" fill="#DCE8D6" stroke="#3F5B45" stroke-width="1.5"/>
+        <path d="M20 32 V18 M20 24 C15 22 13 18 13 14 M20 21 C25 19 27 15 27 11" stroke="#7A5A43" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <ellipse cx="13" cy="12" rx="3.2" ry="2" fill="#9DB39A" transform="rotate(-30 13 12)"/>
+        <ellipse cx="27" cy="9.5" rx="3.2" ry="2" fill="#6F8F6B" transform="rotate(30 27 9.5)"/>
+        <ellipse cx="20" cy="15" rx="3" ry="1.8" fill="#9DB39A" transform="rotate(90 20 15)"/>
+      </svg>
+      GeneAlley
+    </a>
+    <ul>
+      <li><a href="#funzioni">Funzioni</a></li>
+      <li><a href="#privacy">Privacy</a></li>
+      <li><a href="#scarica">Scarica</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <!-- HERO -->
+  <div class="wrap hero">
+    <div>
+      <span class="tag">App Android · gratuita</span>
+      <h1><span class="brand">GeneAlley</span>La storia della tua famiglia, ramo dopo ramo.</h1>
+      <p class="lead">Costruisci l'albero genealogico con foto, date e luoghi, ricorda compleanni e anniversari
+        ed esporta un PDF su pergamena da stampare. Tutto resta sul tuo telefono, anche senza internet.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://play.google.com/store/apps/details?id=it.pfp.GeneAlley">
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 2.5v19l10-9.5L4 2.5zm11.3 8.2 2.6-2.5 3.2 1.8c1.2.7 1.2 2.3 0 3l-3.2 1.8-2.6-2.5zm-.9.8L5.2 21.9l10.6-6.1-1.4-4.3zm0-1L15.8 6.2 5.2.1l9.2 9.4z"/></svg>
+          Disponibile su Google Play
+        </a>
+        <a class="btn btn-ghost" href="#funzioni">Scopri le funzioni</a>
+      </div>
+      <p class="note">Android 8.0 o successivo · Italiano, English, Français, Deutsch, Español</p>
+    </div>
+
+    <!-- Illustrazione: telefono con albero a ritratti -->
+    <div class="phone-stage">
+      <div class="phone" role="img" aria-label="Schermata di GeneAlley con l'albero genealogico a ritratti">
+        <div class="screen">
+          <div class="screen-top"><span class="brand">GeneAlley</span><span class="pill">Tutti i rami</span></div>
+          <svg class="tree" viewBox="0 0 276 420" aria-hidden="true">
+            <defs>
+              <linearGradient id="pa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9D9C6"/><stop offset="1" stop-color="#C9B49E"/></linearGradient>
+              <linearGradient id="pb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D7E3D1"/><stop offset="1" stop-color="#A9BFA4"/></linearGradient>
+              <g id="leaf"><ellipse rx="5" ry="2.6" fill="#8FAA8A"/></g>
+              <g id="leaf2"><ellipse rx="4.5" ry="2.3" fill="#6F8F6B"/></g>
+              <g id="face">
+                <circle r="11" cy="-4" fill="#F4E3D3"/>
+                <path d="M-17 18 a17 13 0 0 1 34 0z" fill="#B9A08A"/>
+              </g>
+            </defs>
+            <!-- rami -->
+            <g stroke="#7A5A43" fill="none" stroke-linecap="round">
+              <path d="M70 92 C70 120 104 118 104 150 M206 92 C206 120 172 118 172 150" stroke-width="3.4"/>
+              <path d="M104 150 C110 156 166 156 172 150" stroke-width="2.6"/>
+              <path d="M138 154 C140 190 138 210 138 236" stroke-width="3.2"/>
+              <path d="M138 236 C120 250 74 250 66 282 M138 236 C138 256 138 262 138 282 M138 236 C156 250 202 250 210 282" stroke-width="2.4"/>
+            </g>
+            <!-- foglie -->
+            <use href="#leaf" transform="translate(78 112) rotate(-35)"/>
+            <use href="#leaf2" transform="translate(96 132) rotate(25)"/>
+            <use href="#leaf" transform="translate(198 110) rotate(35)"/>
+            <use href="#leaf2" transform="translate(182 133) rotate(-25)"/>
+            <use href="#leaf" transform="translate(146 196) rotate(60)"/>
+            <use href="#leaf2" transform="translate(130 214) rotate(-60)"/>
+            <use href="#leaf" transform="translate(100 252) rotate(-15)"/>
+            <use href="#leaf2" transform="translate(178 252) rotate(15)"/>
+            <use href="#leaf" transform="translate(145 265) rotate(70)"/>
+
+            <!-- nonni -->
+            <g transform="translate(70 58)">
+              <circle r="30" fill="url(#pa)" stroke="#8FB6D6" stroke-width="4"/>
+              <clipPath id="c1"><circle r="27"/></clipPath><g clip-path="url(#c1)"><use href="#face" transform="translate(0 6)"/></g>
+            </g>
+            <g transform="translate(206 58)">
+              <circle r="30" fill="url(#pb)" stroke="#E7A3B1" stroke-width="4"/>
+              <clipPath id="c2"><circle r="27"/></clipPath><g clip-path="url(#c2)"><use href="#face" transform="translate(0 6)"/></g>
+            </g>
+            <text x="70" y="22" text-anchor="middle" font-family="Figtree" font-size="9" fill="#5E6B5C">Nonno</text>
+            <text x="206" y="22" text-anchor="middle" font-family="Figtree" font-size="9" fill="#5E6B5C">Nonna</text>
+
+            <!-- genitori -->
+            <g transform="translate(104 168)">
+              <circle r="24" fill="url(#pb)" stroke="#8FB6D6" stroke-width="3.5"/>
+              <clipPath id="c3"><circle r="21.5"/></clipPath><g clip-path="url(#c3)"><use href="#face" transform="translate(0 5) scale(.8)"/></g>
+            </g>
+            <g transform="translate(172 168)">
+              <circle r="24" fill="url(#pa)" stroke="#E7A3B1" stroke-width="3.5"/>
+              <clipPath id="c4"><circle r="21.5"/></clipPath><g clip-path="url(#c4)"><use href="#face" transform="translate(0 5) scale(.8)"/></g>
+            </g>
+            <text x="104" y="206" text-anchor="middle" font-family="Figtree" font-size="9" fill="#2F3A2F" font-weight="600">Padre</text>
+            <text x="172" y="206" text-anchor="middle" font-family="Figtree" font-size="9" fill="#2F3A2F" font-weight="600">Madre</text>
+
+            <!-- figli -->
+            <g transform="translate(66 304)">
+              <circle r="22" fill="url(#pa)" stroke="#E7A3B1" stroke-width="3.5"/>
+              <clipPath id="c5"><circle r="19.5"/></clipPath><g clip-path="url(#c5)"><use href="#face" transform="translate(0 5) scale(.72)"/></g>
+            </g>
+            <g transform="translate(138 304)">
+              <circle r="26" fill="url(#pb)" stroke="#8FB6D6" stroke-width="4"/>
+              <circle r="31" fill="none" stroke="#F1C6A8" stroke-width="2.5" stroke-dasharray="3 4"/>
+              <clipPath id="c6"><circle r="23"/></clipPath><g clip-path="url(#c6)"><use href="#face" transform="translate(0 5) scale(.85)"/></g>
+            </g>
+            <g transform="translate(210 304)">
+              <circle r="22" fill="url(#pb)" stroke="#8FB6D6" stroke-width="3.5"/>
+              <clipPath id="c7"><circle r="19.5"/></clipPath><g clip-path="url(#c7)"><use href="#face" transform="translate(0 5) scale(.72)"/></g>
+            </g>
+            <text x="66" y="341" text-anchor="middle" font-family="Figtree" font-size="9" fill="#2F3A2F" font-weight="600">Sorella</text>
+            <text x="66" y="353" text-anchor="middle" font-family="Figtree" font-size="8" fill="#5E6B5C">* 1984</text>
+            <text x="138" y="348" text-anchor="middle" font-family="Fraunces" font-size="11" fill="#3F5B45" font-weight="600">Tu</text>
+            <text x="138" y="361" text-anchor="middle" font-family="Figtree" font-size="8" fill="#5E6B5C">* 12/03/1987</text>
+            <text x="210" y="341" text-anchor="middle" font-family="Figtree" font-size="9" fill="#2F3A2F" font-weight="600">Fratello</text>
+            <text x="210" y="353" text-anchor="middle" font-family="Figtree" font-size="8" fill="#5E6B5C">* 1991</text>
+
+            <!-- rametti decorativi ai bordi -->
+            <g stroke="#9DB39A" stroke-width="1.4" fill="none" opacity=".7">
+              <path d="M6 400 C20 380 24 360 18 340"/><path d="M270 396 C258 378 254 360 262 344"/>
+            </g>
+            <use href="#leaf" transform="translate(14 378) rotate(-60)" opacity=".7"/>
+            <use href="#leaf2" transform="translate(21 356) rotate(50)" opacity=".7"/>
+            <use href="#leaf" transform="translate(262 376) rotate(60)" opacity=".7"/>
+            <circle cx="257" cy="356" r="2.6" fill="#C2714F" opacity=".7"/><circle cx="262" cy="361" r="2.2" fill="#C2714F" opacity=".7"/>
+          </svg>
+          <div class="screen-nav">
+            <span>⌂<small>Home</small></span>
+            <span class="on">❦ <small>Albero</small></span>
+            <span class="add">+</span>
+            <span>☺<small>Persone</small></span>
+            <span>⋯<small>Altro</small></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FUNZIONI -->
+  <section id="funzioni">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Tutto quello che serve per raccontare la tua famiglia</h2>
+        <p>Semplice da usare, curata nei dettagli, pensata per chi vuole custodire ricordi e legami.</p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3F5B45" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="M12 7.5v4M12 11.5c-4 0-7 2-7 5M12 11.5c4 0 7 2 7 5"/></svg></div>
+          <h3>Albero a ritratti</h3>
+          <p>Foto rotonde con nome, parentela e date. Linea diretta o tutti i rami con fratelli, zii e cugini, e la vista <em>Radici</em> fino a 12 generazioni.</p>
+        </div>
+        <div class="card">
+          <div class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3F5B45" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2"/><path d="M21 16l-5-5-8 8"/></svg></div>
+          <h3>Foto per ogni persona</h3>
+          <p>Dalla galleria o dalla fotocamera, con ritaglio, zoom e rotazione, didascalie e una foto profilo dedicata.</p>
+        </div>
+        <div class="card">
+          <div class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3F5B45" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/><path d="M12 13.2l.9 1.8 2 .3-1.4 1.4.3 2-1.8-.9-1.8.9.3-2-1.4-1.4 2-.3z" fill="#F1C6A8" stroke="none"/></svg></div>
+          <h3>Ricorrenze</h3>
+          <p>Compleanni, anniversari di matrimonio e di chi non c'è più: GeneAlley te li ricorda all'avvio e nei prossimi 30 giorni.</p>
+        </div>
+        <div class="card">
+          <div class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3F5B45" stroke-width="1.8" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></div>
+          <h3>Mappa dei luoghi</h3>
+          <p>Comuni di nascita trovati e normalizzati in automatico, poi una mappa per vedere da dove viene la tua famiglia.</p>
+        </div>
+        <div class="card">
+          <div class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3F5B45" stroke-width="1.8" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 13h7M9 17h5"/></svg></div>
+          <h3>PDF su pergamena</h3>
+          <p>Esporta l'albero in un PDF dal formato A4 fino ad A0, con rami fioriti e intestazione d'epoca: pronto da stampare o regalare.</p>
+        </div>
+        <div class="card">
+          <div class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3F5B45" stroke-width="1.8" stroke-linecap="round"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/></svg></div>
+          <h3>Condividi con i parenti</h3>
+          <p>Invia tutta la struttura, le foto o un solo ramo: chi lo riceve vede le differenze e conferma cosa aggiornare.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIVACY -->
+  <section id="privacy">
+    <div class="wrap">
+      <div class="band">
+        <div>
+          <h2>I tuoi dati restano tuoi</h2>
+          <p>GeneAlley non ha account né server: nomi, date, note e foto sono salvati solo sul tuo telefono.
+            Funziona offline; internet serve soltanto per la mappa e per cercare i comuni.</p>
+        </div>
+        <ul>
+          <li><strong>Backup completo</strong> in un file ZIP, da conservare su Drive o sul PC.</li>
+          <li><strong>Parentele complete</strong>: genitori biologici, adottivi e affidatari; matrimoni, unioni civili, convivenze.</li>
+          <li><strong>Date anche parziali</strong>: basta l'anno, o mese e anno, quando non sai di più.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- LINGUE -->
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Parla la lingua della tua famiglia</h2>
+        <p>Segue la lingua del telefono, oppure la scegli tu solo per GeneAlley. Tema chiaro o scuro, sempre in stile acquerello.</p>
+      </div>
+      <div class="langs">
+        <span>🇮🇹 Italiano</span><span>🇬🇧 English</span><span>🇫🇷 Français</span><span>🇩🇪 Deutsch</span><span>🇪🇸 Español</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- DOWNLOAD -->
+  <section id="scarica" class="final">
+    <div class="wrap">
+      <span class="brand">GeneAlley</span>
+      <p>Inizia oggi dal primo ritratto: il resto dell'albero crescerà con te.</p>
+      <a class="btn btn-primary" href="https://play.google.com/store/apps/details?id=it.pfp.GeneAlley">Scarica da Google Play</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 PFP · GeneAlley</span>
+    <span>Dati cartografici © OpenStreetMap contributors, © CARTO</span>
+  </div>
+</footer>
+
+</body>
+</html>
